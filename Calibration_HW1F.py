@@ -66,9 +66,9 @@ data = [
 
 def create_swaption_helpers(data, index, term_structure, engine):
     swaptions = []
-    fixed_leg_tenor = ql.Period(1, ql.Years)
-    fixed_leg_daycounter = ql.Actual360()
-    floating_leg_daycounter = ql.Actual360()
+    fixed_leg_tenor = Period(1, Years)
+    fixed_leg_daycounter = Actual360()
+    floating_leg_daycounter = Actual360()
     for d in data:
         vol_handle = QuoteHandle(SimpleQuote(d.volatility))
         helper = SwaptionHelper(Period(d.start, Years),
@@ -123,32 +123,32 @@ engine = JamshidianSwaptionEngine(model)
 swaptions = create_swaption_helpers(data, index, term_structure, engine)
 
 
-def makeSwap(start, maturity, nominal, fixedRate, index, typ=ql.VanillaSwap.Payer):
+def makeSwap(start, maturity, nominal, fixedRate, index, typ=VanillaSwap.Payer):
 
-    end = ql.TARGET().advance(start, maturity)
-    fixedLegTenor = ql.Period(3,ql.Months)
-    fixedLegBDC = ql.ModifiedFollowing
-    fixedLegDC = ql.Thirty360(ql.Thirty360.BondBasis)
+    end = TARGET().advance(start, maturity)
+    fixedLegTenor = Period(3,Months)
+    fixedLegBDC = ModifiedFollowing
+    fixedLegDC = Thirty360(Thirty360.BondBasis)
     # fixedLegDC = ql.Actual365Fixed()
 
     spread = 0.0
-    fixedSchedule = ql.Schedule(start,
+    fixedSchedule = Schedule(start,
                                 end, 
                                 fixedLegTenor, 
                                 index.fixingCalendar(), 
                                 fixedLegBDC,
                                 fixedLegBDC, 
-                                ql.DateGeneration.Backward,
+                                DateGeneration.Backward,
                                 False)
-    floatSchedule = ql.Schedule(start,
+    floatSchedule = Schedule(start,
                                 end,
                                 index.tenor(),
                                 index.fixingCalendar(),
                                 index.businessDayConvention(),
                                 index.businessDayConvention(),
-                                ql.DateGeneration.Backward,
+                                DateGeneration.Backward,
                                 False)
-    swap = ql.VanillaSwap(typ, 
+    swap = VanillaSwap(typ, 
                           nominal,
                           fixedSchedule,
                           fixedRate,
@@ -161,15 +161,15 @@ def makeSwap(start, maturity, nominal, fixedRate, index, typ=ql.VanillaSwap.Paye
 
 def makeSwaption(swap, callDates, settlement):
     if len(callDates) == 1:
-        exercise = ql.EuropeanExercise(callDates[0])
+        exercise = EuropeanExercise(callDates[0])
     else:
-        exercise = ql.BermudanExercise(callDates)
-    return ql.Swaption(swap, exercise, settlement)
+        exercise = BermudanExercise(callDates)
+    return Swaption(swap, exercise, settlement)
 
 
 settlementDate = today + ql.Period("2D")
-swaps = [makeSwap(settlementDate,ql.Period("1Y"),1e5,0.03,index)]
-calldates = [index.fixingDate(ql.Date(28,2,2023))]
+swaps = [makeSwap(settlementDate,Period("1Y"),1e5,0.03,index)]
+calldates = [index.fixingDate(Date(28,2,2023))]
 swaptions = [makeSwaption(swap, calldates, ql.Settlement.Physical) for swap, fd in swaps]
 
 for swaption in swaptions:
